@@ -30,4 +30,18 @@ export const profileQuery = {
       return context.prisma.profile.findMany();
     },
   },
+  profile: {
+    type: profileType,
+    args: {
+      id: {
+        type: UUIDType,
+      },
+    },
+    resolve: async (obj, args, context) => {
+      const { id } = args;
+      return await context.prisma.profile.findUnique({
+        where: { id },
+      });
+    },
+  },
 };

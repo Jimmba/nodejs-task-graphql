@@ -23,4 +23,18 @@ export const userQuery = {
       return await context.prisma.user.findMany();
     },
   },
+  user: {
+    type: userType,
+    args: {
+      id: {
+        type: UUIDType,
+      },
+    },
+    resolve: async (obj, args, context) => {
+      const { id } = args;
+      return await context.prisma.user.findUnique({
+        where: { id },
+      });
+    },
+  },
 };
