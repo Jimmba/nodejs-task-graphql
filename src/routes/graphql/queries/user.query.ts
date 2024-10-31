@@ -8,8 +8,9 @@ import {
 import { UUIDType } from '../types/uuid.js';
 import { profileType } from './profiles.query.js';
 import { postType } from './posts.query.js';
+import { subscribersOnAuthorsType } from './subscribers-on-authors.query.js';
 
-const userType = new GraphQLObjectType({
+export const userType = new GraphQLObjectType({
   name: 'User',
   fields: () => ({
     id: {
@@ -37,14 +38,34 @@ const userType = new GraphQLObjectType({
         });
       },
     },
-    // userSubscribedTo: {
-    //   type: userType,
-    //   resolve: async (user, args, context) => {
-    //     return await context.prisma.post.findMany({
-    //       where: { authorId: user.id },
-    //     });
-    //   },
-    // }
+    subscribedToUser: {
+      type: new GraphQLList(userType),
+      resolve: async (user, args, context) => {
+        return await context.prisma.user.findMany({
+          where: {
+            userSubscribedTo: {
+              some: {
+                authorId: user.id,
+              },
+            },
+          },
+        });
+      },
+    },
+    userSubscribedTo: {
+      type: new GraphQLList(userType),
+      resolve: async (user, args, context) => {
+        return await context.prisma.user.findMany({
+          where: {
+            subscribedToUser: {
+              some: {
+                subscriberId: user.id,
+              },
+            },
+          },
+        });
+      },
+    },
   }),
 });
 
