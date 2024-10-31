@@ -1,11 +1,19 @@
-import { GraphQLFloat, GraphQLList, GraphQLObjectType, GraphQLString } from 'graphql';
+import {
+  GraphQLFloat,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLString,
+} from 'graphql';
 import { UUIDType } from '../types/uuid.js';
+import { profileType } from './profiles.query.js';
+import { postType } from './posts.query.js';
 
 const userType = new GraphQLObjectType({
   name: 'User',
   fields: () => ({
     id: {
-      type: UUIDType,
+      type: new GraphQLNonNull(UUIDType),
     },
     name: {
       type: GraphQLString,
@@ -13,6 +21,30 @@ const userType = new GraphQLObjectType({
     balance: {
       type: GraphQLFloat,
     },
+    profile: {
+      type: profileType,
+      resolve: async (user, args, context) => {
+        return await context.prisma.profile.findUnique({
+          where: { userId: user.id },
+        });
+      },
+    },
+    posts: {
+      type: new GraphQLList(postType),
+      resolve: async (user, args, context) => {
+        return await context.prisma.post.findMany({
+          where: { authorId: user.id },
+        });
+      },
+    },
+    // userSubscribedTo: {
+    //   type: userType,
+    //   resolve: async (user, args, context) => {
+    //     return await context.prisma.post.findMany({
+    //       where: { authorId: user.id },
+    //     });
+    //   },
+    // }
   }),
 });
 
@@ -32,9 +64,10 @@ export const userQuery = {
     },
     resolve: async (obj, args, context) => {
       const { id } = args;
-      return await context.prisma.user.findUnique({
+      const user = await context.prisma.user.findUnique({
         where: { id },
       });
+      return user || null;
     },
   },
 };
