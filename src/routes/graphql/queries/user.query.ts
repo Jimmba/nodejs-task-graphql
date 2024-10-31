@@ -8,7 +8,6 @@ import {
 import { UUIDType } from '../types/uuid.js';
 import { profileType } from './profiles.query.js';
 import { postType } from './posts.query.js';
-import { subscribersOnAuthorsType } from './subscribers-on-authors.query.js';
 
 export const userType = new GraphQLObjectType({
   name: 'User',
