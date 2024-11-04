@@ -13,7 +13,7 @@ export const userType = new GraphQLObjectType({
   name: 'User',
   fields: () => ({
     id: {
-      type: new GraphQLNonNull(UUIDType),
+      type: UUIDType,
     },
     name: {
       type: GraphQLString,
@@ -24,45 +24,25 @@ export const userType = new GraphQLObjectType({
     profile: {
       type: profileType,
       resolve: async (user, args, context) => {
-        return await context.prisma.profile.findUnique({
-          where: { userId: user.id },
-        });
+        return await context.loaders.profileLoader.load(user.id);
       },
     },
     posts: {
       type: new GraphQLList(postType),
       resolve: async (user, args, context) => {
-        return await context.prisma.post.findMany({
-          where: { authorId: user.id },
-        });
+        return await context.loaders.postLoader.load(user.id);
       },
     },
     subscribedToUser: {
       type: new GraphQLList(userType),
       resolve: async (user, args, context) => {
-        return await context.prisma.user.findMany({
-          where: {
-            userSubscribedTo: {
-              some: {
-                authorId: user.id,
-              },
-            },
-          },
-        });
+        return await context.loaders.subscribedToUserLoader.load(user.id);
       },
     },
     userSubscribedTo: {
       type: new GraphQLList(userType),
       resolve: async (user, args, context) => {
-        return await context.prisma.user.findMany({
-          where: {
-            subscribedToUser: {
-              some: {
-                subscriberId: user.id,
-              },
-            },
-          },
-        });
+        return await context.loaders.userSubscribedToLoader.load(user.id);
       },
     },
   }),
